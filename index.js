@@ -98,6 +98,7 @@ app.get('/signup/success', (req, res) => {
     res.send('Registration successful');
 });
 app.get('/signup/failure', (req, res) => {
+    console.log('tesintg');
     res.send('Failure during the registration');
 });
 app.get('/login/success', (req, res) => {
