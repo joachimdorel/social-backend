@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -22,36 +31,31 @@ passport_1.default.use('local-signup', new passport_local_1.Strategy({
     usernameField: 'email',
     passwordField: 'password',
     passReqToCallback: true
-}, (email, password, done) => {
-    console.log('here in the passport use part');
-    try {
+}, function (req, email, password, done) {
+    return __awaiter(this, void 0, void 0, function* () {
         // check if the user already exist
         const user = users.find(user => user.email === email);
         if (user) {
             return done(null, false, { message: 'Email already used.' });
         }
         // hash the password
-        // const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = yield bcrypt_1.default.hash(password, 10);
         // creation of the user
         const newUser = {
             id: Date.now().toString(),
             email: email,
-            // password: hashedPassword
-            password: password
+            password: hashedPassword
         };
         users.push(newUser);
         return done(null, newUser);
-    }
-    catch (error) {
-        return done(error);
-    }
+    });
 }));
 // Passport strategy for connexion
 passport_1.default.use('local-login', new passport_local_1.Strategy({
     usernameField: 'email',
-    passwordField: 'password'
-}, (email, password, done) => {
-    console.log('here');
+    passwordField: 'password',
+    passReqToCallback: true
+}, function (req, email, password, done) {
     const user = users.find(user => user.email === email);
     if (!user) {
         return done(null, false, { message: 'User not found' });
@@ -82,23 +86,22 @@ passport_1.default.deserializeUser((id, done) => {
 app.get('', (req, res) => {
     res.send('Home page');
 });
-// inscription
+app.get('/error', (req, res) => {
+    res.send('Error page');
+});
 app.post('/signup', passport_1.default.authenticate('local-signup', {
     successRedirect: '/signup/success',
-    failureRedirect: '/signup/failure',
-    failureFlash: false
+    failureRedirect: '/signup/failure'
 }));
 // connexion
 app.post('/login', passport_1.default.authenticate('local-login', {
     successRedirect: '/login/success',
     failureRedirect: '/login/failure',
-    failureFlash: false
 }));
 app.get('/signup/success', (req, res) => {
     res.send('Registration successful');
 });
 app.get('/signup/failure', (req, res) => {
-    console.log('tesintg');
     res.send('Failure during the registration');
 });
 app.get('/login/success', (req, res) => {

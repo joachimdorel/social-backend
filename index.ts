@@ -8,7 +8,6 @@ import bcrypt from 'bcrypt';
 const users: any[] = [];
 
 const app = express();
-
 app.use(express.json());
 // TODO add secret key here
 app.use(session({ secret: 'secretKey', resave: false, saveUninitialized: false }));
@@ -18,13 +17,14 @@ app.use(passport.session());
 // Passport
 // Passsport strategy for inscription
 
-passport.use('local-signup', new LocalStrategy({
-  usernameField: 'email',
-  passwordField: 'password',
-  passReqToCallback: true
-}, (email, password, done: any) => {
-  console.log('here in the passport use part');
-  try {
+passport.use(
+  'local-signup', 
+  new LocalStrategy({
+    usernameField: 'email',
+    passwordField: 'password',
+    passReqToCallback: true
+  }, async function(req, email, password, done) {
+
     // check if the user already exist
     const user = users.find(user => user.email === email);
     if (user) {
@@ -32,29 +32,28 @@ passport.use('local-signup', new LocalStrategy({
     }
 
     // hash the password
-    // const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // creation of the user
     const newUser = { 
       id: Date.now().toString(),
       email: email,
-      // password: hashedPassword
-      password: password
+      password: hashedPassword
     };
     users.push(newUser);
 
     return done(null, newUser);
-  } catch(error) {
-    return done(error);
-  }
-}));
+  })
+);
 
 // Passport strategy for connexion
-passport.use('local-login', new LocalStrategy({
-  usernameField: 'email',
-  passwordField: 'password'
-}, (email, password, done) => {
-  console.log('here');
+passport.use(
+  'local-login', 
+  new LocalStrategy({
+    usernameField: 'email',
+    passwordField: 'password',
+    passReqToCallback: true
+  }, function(req, email, password, done) {
   const user = users.find(user => user.email === email);
 
   if (!user) {
@@ -93,19 +92,26 @@ app.get('', (req, res) => {
   res.send('Home page');
 });
 
-// inscription
-app.post('/signup', passport.authenticate('local-signup', {
-  successRedirect: '/signup/success',
-  failureRedirect: '/signup/failure',
-  failureFlash: false
-}));
+app.get('/error', (req, res) => {
+  res.send('Error page');
+});
+
+app.post(
+  '/signup', 
+  passport.authenticate('local-signup', { 
+    successRedirect: '/signup/success', 
+    failureRedirect: '/signup/failure'
+  })
+);
 
 // connexion
-app.post('/login', passport.authenticate('local-login', {
-  successRedirect: '/login/success',
-  failureRedirect: '/login/failure',
-  failureFlash: false
-}));
+app.post(
+  '/login', 
+  passport.authenticate('local-login', {
+    successRedirect: '/login/success',
+    failureRedirect: '/login/failure',
+  })
+);
 
 app.get('/signup/success', (req, res) => {
   res.send('Registration successful')
