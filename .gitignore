@@ -2,3 +2,5 @@
 /.env
 /dist
 /nodemon.json
+
+/build

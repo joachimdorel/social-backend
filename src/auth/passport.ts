@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 
 const users: any[] = [];
 
-const passport = (passport: any) => {
+module.exports = (passport: any) => {
 
   // Passport
   // Passsport strategy for inscription
@@ -14,9 +14,6 @@ const passport = (passport: any) => {
       passwordField: 'password',
       passReqToCallback: true
     }, async function(req, email, password, done) {
-
-      console.log('in the local signup');
-
       // check if the user already exist
       const user = users.find(user => user.email === email);
       if (user) {
@@ -72,7 +69,6 @@ const passport = (passport: any) => {
   });
 
   passport.deserializeUser((id: any, done: any) => {
-    console.log(typeof id);
     // deserialize the user
     // deserialization: from an id, get all the data
     // of the user (email, name, password...)
@@ -81,4 +77,4 @@ const passport = (passport: any) => {
   });
 };
 
-export default passport;
+// export default passport;
