@@ -3,8 +3,24 @@ import passport from 'passport';
 
 const router = express.Router();
 
+import { Client } from 'pg';
+
 // Routes
-router.get('', (req, res) => {
+router.get('', async (req, res) => {
+  const client = new Client({
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER
+  });
+
+  await client.connect();
+
+  const result = await client.query('SELECT * FROM USERS;');
+  console.log(result.rows);
+
+  await client.end();
+
   res.send('Home page');
 });
 

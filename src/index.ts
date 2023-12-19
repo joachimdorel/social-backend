@@ -4,6 +4,8 @@ import passport from 'passport';
 
 import router from './routes';
 
+require('dotenv').config()
+
 require('./auth/passport')(passport);
 
 const app = express();
