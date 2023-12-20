@@ -15,6 +15,7 @@ module.exports = (passport: any) => {
       passReqToCallback: true
     }, async function(req, email, password, done) {
       // check if the user already exist
+      console.log('in the signup');
       const user = users.find(user => user.email === email);
       if (user) {
         return done(null, false, { message: 'Email already used.' });
@@ -43,24 +44,26 @@ module.exports = (passport: any) => {
       passwordField: 'password',
       passReqToCallback: true
     }, function(req, email, password, done) {
-    const user = users.find(user => user.email === email);
 
-    if (!user) {
-      return done(null, false, { message: 'User not found' });
-    }
+      const user = users.find(user => user.email === email);
 
-    bcrypt.compare(password, user.password, (err, isMatch) => {
-      if (err) {
-        return done(err);
+      if (!user) {
+        return done(null, false, { message: 'User not found' });
       }
 
-      if (!isMatch) {
-        return done(null, false, { message: 'Incorrect password' });
-      }
+      bcrypt.compare(password, user.password, (err, isMatch) => {
+        if (err) {
+          return done(err);
+        }
 
-      return done(null, user);
-    });
-  }));
+        if (!isMatch) {
+          return done(null, false, { message: 'Incorrect password' });
+        }
+
+        return done(null, user);
+      });
+    })
+  );
 
   passport.serializeUser((user: any, done: any) => {
     // serialize the user in the session
