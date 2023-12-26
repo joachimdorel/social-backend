@@ -45,32 +45,16 @@ var router = express_1.default.Router();
 var pg_1 = require("pg");
 // Routes
 router.get('', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var pool, client, result;
+    var pool;
     return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                pool = new pg_1.Pool({
-                    host: process.env.DB_HOST,
-                    port: Number(process.env.DB_PORT),
-                    database: process.env.DB_NAME,
-                    user: process.env.DB_USER
-                });
-                console.log("before the connect ".concat(pool.totalCount));
-                return [4 /*yield*/, pool.connect()];
-            case 1:
-                client = _a.sent();
-                console.log("after the connect ".concat(pool.totalCount));
-                return [4 /*yield*/, client.query('SELECT * FROM USERS;')];
-            case 2:
-                result = _a.sent();
-                console.log(result.rows);
-                client.release();
-                return [4 /*yield*/, pool.end()];
-            case 3:
-                _a.sent();
-                res.send('Home page');
-                return [2 /*return*/];
-        }
+        pool = new pg_1.Pool({
+            host: process.env.DB_HOST,
+            port: Number(process.env.DB_PORT),
+            database: process.env.DB_NAME,
+            user: process.env.DB_USER
+        });
+        res.send('Home page');
+        return [2 /*return*/];
     });
 }); });
 router.get('/error', function (req, res) {

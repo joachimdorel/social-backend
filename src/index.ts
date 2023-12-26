@@ -3,6 +3,7 @@ import session from 'express-session';
 import passport from 'passport';
 
 import router from './routes';
+import pool from './utils/pgPool'
 
 require('dotenv').config()
 
@@ -14,7 +15,7 @@ app.use(express.json());
 
 // TODO add secret key here
 app.use(session({ 
-  secret: 'secretKey', 
+  secret: String(process.env.SECRET_KEY), 
   resave: false, 
   saveUninitialized: false 
 }));
@@ -35,6 +36,13 @@ app.use(passport.session());
 app.use('/', router);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
+});
+
+process.on('SIGTERM', async () => {
+  server.close(async () => {
+    // closing ressources
+    await pool.end();
+  });
 });
