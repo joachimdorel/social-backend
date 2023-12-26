@@ -1,5 +1,6 @@
 import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt';
+import pool from '../utils/pgPool';
 
 const users: any[] = [];
 
@@ -14,25 +15,28 @@ module.exports = (passport: any) => {
       passwordField: 'password',
       passReqToCallback: true
     }, async function(req, email, password, done) {
-      // check if the user already exist
-      
-      const user = users.find(user => user.email === email);
-      if (user) {
-        return done(null, false, { message: 'Email already used.' });
+
+      try {
+
+        // check that the user does not alreayd exists
+        const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (existingUser.rows.length > 0) {
+          return done(null, false, { message: 'This email address is alreayd used.'});
+        }
+
+        // hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // create the new user
+        const newUser = await pool.query(
+          'INSERT INTO users (email, password) VALUES ($1,$2) RETURNING *',
+          [email, hashedPassword]
+        );
+
+        return done(null, newUser.rows[0]);
+      } catch (error) {
+        return done(error);
       }
-
-      // hash the password
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // creation of the user
-      const newUser = { 
-        id: Date.now().toString(),
-        email: email,
-        password: hashedPassword
-      };
-      users.push(newUser);
-
-      return done(null, newUser);
     })
   );
 
@@ -43,25 +47,28 @@ module.exports = (passport: any) => {
       usernameField: 'email',
       passwordField: 'password',
       passReqToCallback: true
-    }, function(req, email, password, done) {
+    }, async (req, email, password, done) => {
+      try {
+        const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
-      const user = users.find(user => user.email === email);
+        if (!user) {
+          return done(null, false, { message: 'User not found' });
+        }
 
-      if (!user) {
-        return done(null, false, { message: 'User not found' });
+        bcrypt.compare(password, user.rows[0].password, (err, isMatch) => {
+          if (err) {
+            return done(err);
+          }
+
+          if (!isMatch) {
+            return done(null, false, { message: 'The password is incorrect.'});
+          }
+
+          return done(null, user.rows[0]);
+        });
+      } catch (error) {
+        return done(error);
       }
-
-      bcrypt.compare(password, user.password, (err, isMatch) => {
-        if (err) {
-          return done(err);
-        }
-
-        if (!isMatch) {
-          return done(null, false, { message: 'Incorrect password' });
-        }
-
-        return done(null, user);
-      });
     })
   );
 
@@ -71,12 +78,16 @@ module.exports = (passport: any) => {
     done(null, user.id);
   });
 
-  passport.deserializeUser((id: any, done: any) => {
+   passport.deserializeUser(async (id: any, done: any) => {
     // deserialize the user
-    // deserialization: from an id, get all the data
-    // of the user (email, name, password...)
-    const user = users.find(user => user.id === id);
-    done(null, user || false);
+    // deserialization: from an id, get all the data of the user (email, name, password...)
+    try {
+      const result  = await pool.query('SELECT * FROM users WHERE id=$1', [id]);
+      const user = result.rows[0];
+      return done(null, user);
+    } catch(err) {
+      return done(err);
+    }
   });
 };
 

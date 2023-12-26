@@ -3,7 +3,7 @@ import passport from 'passport';
 
 const router = express.Router();
 
-import { Client, Pool } from 'pg';
+import { Pool } from 'pg';
 
 // Routes
 router.get('', async (req, res) => {
@@ -13,17 +13,6 @@ router.get('', async (req, res) => {
     database: process.env.DB_NAME,
     user: process.env.DB_USER
   });
-
-  console.log(`before the connect ${pool.totalCount}`)
-
-  // small test of the db connection
-  const client = await pool.connect();
-  console.log(`after the connect ${pool.totalCount}`);
-  const result = await client.query('SELECT * FROM USERS;');
-  console.log(result.rows);
-  client.release();
-
-  await pool.end();
 
   res.send('Home page');
 });
