@@ -3,23 +3,27 @@ import passport from 'passport';
 
 const router = express.Router();
 
-import { Client } from 'pg';
+import { Client, Pool } from 'pg';
 
 // Routes
 router.get('', async (req, res) => {
-  const client = new Client({
+  const pool = new Pool({
     host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT),
     database: process.env.DB_NAME,
     user: process.env.DB_USER
   });
 
-  await client.connect();
+  console.log(`before the connect ${pool.totalCount}`)
 
+  // small test of the db connection
+  const client = await pool.connect();
+  console.log(`after the connect ${pool.totalCount}`);
   const result = await client.query('SELECT * FROM USERS;');
   console.log(result.rows);
+  client.release();
 
-  await client.end();
+  await pool.end();
 
   res.send('Home page');
 });

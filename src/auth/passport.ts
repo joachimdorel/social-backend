@@ -15,7 +15,7 @@ module.exports = (passport: any) => {
       passReqToCallback: true
     }, async function(req, email, password, done) {
       // check if the user already exist
-      console.log('in the signup');
+      
       const user = users.find(user => user.email === email);
       if (user) {
         return done(null, false, { message: 'Email already used.' });

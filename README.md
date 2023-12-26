@@ -2,14 +2,21 @@
 
 A backend coded in Node JS for a small social network.
 
-## how to launch
+## How to start the project
+
+### In development mode
+In this mode, nodemon is used to recompile the code each time a change is saved.  
+```npm run dev```
+
+### Normal start
 ```npm start```
 
-## to start the DB
+## To start the database
 
-The backend works with PostgreSQL. To install and start the db on mac os:
+The backend works with PostgreSQL. To install and start the database on mac os:
 
 ```npm install pg```
+
 ```brew services start postgresql```
 
 And then to connect to the database:

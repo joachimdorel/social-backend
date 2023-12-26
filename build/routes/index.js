@@ -45,26 +45,24 @@ var router = express_1.default.Router();
 var pg_1 = require("pg");
 // Routes
 router.get('', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var client, result;
+    var pool, client, result;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                client = new pg_1.Client({
+                pool = new pg_1.Pool({
                     host: process.env.DB_HOST,
                     port: Number(process.env.DB_PORT),
                     database: process.env.DB_NAME,
                     user: process.env.DB_USER
                 });
-                return [4 /*yield*/, client.connect()];
+                return [4 /*yield*/, pool.connect()];
             case 1:
-                _a.sent();
+                client = _a.sent();
                 return [4 /*yield*/, client.query('SELECT * FROM USERS;')];
             case 2:
                 result = _a.sent();
                 console.log(result.rows);
-                return [4 /*yield*/, client.end()];
-            case 3:
-                _a.sent();
+                client.release();
                 res.send('Home page');
                 return [2 /*return*/];
         }
