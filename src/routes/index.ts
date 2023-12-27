@@ -3,17 +3,8 @@ import passport from 'passport';
 
 const router = express.Router();
 
-import { Pool } from 'pg';
-
 // Routes
 router.get('', async (req, res) => {
-  const pool = new Pool({
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT),
-    database: process.env.DB_NAME,
-    user: process.env.DB_USER
-  });
-
   res.send('Home page');
 });
 
